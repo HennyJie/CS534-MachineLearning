@@ -9,13 +9,14 @@ close_price = data['Close'].to_numpy()
 dates = data['Date'].values
 
 x = [dt.datetime.strptime(d,'%Y-%m-%d').date() for d in dates]
-
 y = close_price
-plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
 
+# set format and locator
+plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
 locator = mdates.YearLocator()
 plt.gca().xaxis.set_major_locator(locator)
 
+# plot the daily closing prices over time
 plt.plot(x,y)
 plt.title('Daily Closing Price of AAPL')
 plt.ylabel('daily closing prices')
@@ -28,12 +29,14 @@ daily_return = np.ones(total_days_count-1)
 for i in range(total_days_count - 1):
     daily_return[i] = close_price[i+1] / close_price[i]
 
+# calculate the mean and variance of the Apple stock’s daily return
 mean_daily_return = np.mean(daily_return)
 variance_daily_return = np.var(daily_return)
 print("The mean of the Apple stock’s daily return is: ", mean_daily_return)
 print("The variance of the Apple stock’s daily return is: ", variance_daily_return)
 print("-----------------------------------------------------------------")
 
+# calculate the daily returns for the Year 2014, 2015, 2016, 2017, 2018, and 2019
 daily_return_list = daily_return.tolist()
 daily_return_list.insert(0, None)
 data['Return'] = daily_return_list
@@ -52,15 +55,4 @@ for key in year_group_dict.keys():
     print("Mean Daily returns for the Year {} is: {}".format(key, np.mean(year_group_dict[key])))
     print("Var Daily returns for the Year {} is: {}".format(key, np.var(year_group_dict[key])))
     print("-----------------------------------------------------------------")
-
-# print("year_group_dict: ", year_group_dict)
-
-# return_data = [dates[1:], daily_return]
-# return_data = [[row[i] for row in return_data] for i in range(len(return_data[0]))]
-# df = pd.DataFrame(return_data, columns=['Date','Return'])
-# group_by_year = df['Return'].groupby(pd.to_datetime(df['Date']).dt.year)
-# print(group_by_year.mean())
-# print(group_by_year.var())
-
-# plt.show()
 

@@ -5,3 +5,4 @@
 *.pyx
 .pxi
 pandas/
+pandas-profiling-master/
