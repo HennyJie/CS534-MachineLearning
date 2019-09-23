@@ -6,3 +6,7 @@
 .pxi
 pandas/
 pandas-profiling-master/
+*.html
+*.xml
+*.pyc
+*.pdf
