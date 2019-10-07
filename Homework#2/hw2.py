@@ -2,7 +2,7 @@
 @Description: Logistic Regression for Brier Score and Price Predicting, CS534-Machine Learning Hw2
 @Author: Hejie Cui
 @Date: 2019-09-28 18:35:20
-@LastEditTime: 2019-10-06 23:41:27
+@LastEditTime: 2019-10-07 15:39:32
 '''
 import datetime
 import numpy as np
@@ -16,6 +16,9 @@ from math import sqrt
 from sklearn.model_selection import KFold
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 from scipy.stats import uniform
+from scipy.ndimage.interpolation import shift
+import matplotlib
+import matplotlib.pyplot as plt
 
 
 class LogisticBrier:
@@ -77,11 +80,11 @@ class PricePrediction:
         df_test = df['2019-5-1':]
 
         # Devide the data as training set and test set, max window is used for calculating moving average
-        max_window = 50
-        self.train_X = self.feature_construct(df_train, max_window)
-        self.train_y = self.label_construct(df_train, max_window)
-        self.test_X = self.feature_construct(df_test, max_window)
-        self.test_y = self.label_construct(df_test, max_window)
+        self.max_window = 50
+        self.train_X = self.feature_construct(df_train, self.max_window)
+        self.train_y = self.label_construct(df_train, self.max_window)
+        self.test_X = self.feature_construct(df_test, self.max_window)
+        self.test_y = self.label_construct(df_test, self.max_window)
 
     def feature_construct(self, df, window):
         # Make various features that may help the predictive algorithms
@@ -124,6 +127,9 @@ class PricePrediction:
         labels[0] = 0
         for i in range(1, np.shape(df)[0]):
             labels[i] = df['Close'][i] - df['Close'][i-1]
+        # labels = shift(labels, 1, cval=np.NaN)
+        labels = np.roll(labels, 1)
+        labels[0] = np.NaN
         labels = labels[window-1:]
         return labels
 
@@ -211,6 +217,36 @@ y_true = predictor.test_y
 MSE, RMSE, RSQ, MAE, MAPE, MedAE = predictor.evaluate(y_true, y_pred)
 print("MSE: {}, RMSE: {}, RSQ: {}, MAE: {}, MAPE: {}, MedAE: {}".format(
     MSE, RMSE, RSQ, MAE, MAPE, MedAE))
+
+### draw close price picture ###
+X = range(len(predictor.test_X))
+plt.title('Stock Price Prediction')
+
+df['Date'] = pd.to_datetime(df['Date'])
+df = df.set_index(df['Date'])
+df = df.sort_index()
+df_test = df['2019-5-1':]
+y_true_close = df_test['Close']
+
+y_true_close = y_true_close[predictor.max_window-1:]
+print("y_true_close shape: ", y_true_close.shape)
+y_pred_close = y_true_close
+
+for i in range(1, y_true_close.shape[0]):
+    print(y_pred[i])
+    print(y_pred_close[i])
+    y_pred_close[i] = y_true_close[i-1] + y_pred[i]
+
+print("y_pred_close: ", y_pred_close)
+print("y_pred_close shape: ", y_pred_close.shape)
+
+plt.plot(X, y_pred_close, "x-", label="y_pred_close")
+plt.plot(X, y_true_close, "+-", label="y_true_close")
+
+plt.legend()
+plt.xlabel('date')
+plt.ylabel('close price difference')
+plt.show()
 
 ##### interpret of my results #####
 # The best alpha, l1_ratio and coefficients of my ElaticNetCV fit process is shown as below:

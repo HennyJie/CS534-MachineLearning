@@ -2,7 +2,7 @@
 @Description: Class Ridge and ForwardStagewise, CS534-Machine Learning Hw1 
 @Author: Hejie Cui
 @Date: 2019-09-19 10:54:23
-@LastEditTime: 2019-09-23 18:04:34
+@LastEditTime: 2019-10-07 16:52:18
 '''
 # Please do not use other libraries except for numpy
 
@@ -36,7 +36,8 @@ class Ridge:
             before figuring out the closed form solution.
             By doing so, I can get the exactly the same values of intercept and self.coef values compared with sklearn.
         """
-
+        print("coef_prior", coef_prior)
+        print("lmbd: ", lmbd)
         n, m = X.shape
         self.coef = np.zeros(m)
         if coef_prior.any() == None:
@@ -47,6 +48,10 @@ class Ridge:
         x_sigma = np.std(X, axis=0)
         for i in range(m):
             X[:, i] = (X[:, i] - x_mu[i]) / x_sigma[i]
+        # print("X: ", X)
+
+        # X = (X-x_mu)/x_sigma
+        # print("right X:", X)
 
         # b) adjust coef_prior according to the normalization parameters
         for i in range(m):
