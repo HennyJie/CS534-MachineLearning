@@ -2,7 +2,7 @@
 @Description: Logistic Regression for Brier Score and Price Predicting, CS534-Machine Learning Hw2
 @Author: Hejie Cui
 @Date: 2019-09-28 18:35:20
-@LastEditTime: 2019-10-06 23:03:05
+@LastEditTime: 2019-10-06 23:41:27
 '''
 import datetime
 import numpy as np
@@ -191,7 +191,10 @@ loss_LogisticRegression = np.sum(
     (y.reshape((X.shape[0], 1)) - expit(np.dot(X, logistic.coef_.T)))**2)
 print("loss of LogisticRegression: ", loss_LogisticRegression)
 ### interpret of my results ###
-
+#
+# !!!Note!!!: To see and check the result output of Problem 1, I suggest that first comment out all the code
+# in Problem 2 section, since there are continuous convergenceWarning logging information in the ElasticNet
+# fit process。
 ############################################ Problem 1 ###################################################
 
 
@@ -209,18 +212,31 @@ MSE, RMSE, RSQ, MAE, MAPE, MedAE = predictor.evaluate(y_true, y_pred)
 print("MSE: {}, RMSE: {}, RSQ: {}, MAE: {}, MAPE: {}, MedAE: {}".format(
     MSE, RMSE, RSQ, MAE, MAPE, MedAE))
 
-### interpret of my results ###
-# I have constructed a 11-dimention feature matrix from the original data, which is the long term and short
-# simple
+##### interpret of my results #####
+# The best alpha, l1_ratio and coefficients of my ElaticNetCV fit process is shown as below:
 # best alpha:  0.10256410256410256
 # best l1_ratio:  0.14141414141414144
 # best coefficients:  [ 8.19211115e-03  2.47098327e-03 -4.36819687e-01  1.71917206e-02
 #                      -9.46405452e-02  1.30477476e+00  2.97282920e-01  8.77974812e-02
 #                       2.76315245e-02  1.51503200e-08 -1.06450824e-10]
+
+# The result from different evaluation metrics are shown as below
 # MSE:  0.9309868149978563
 # RMSE:  0.9648765801893299
 # RSQ:  0.6126145726005878
 # MAE:  0.9277922740292522
 # MAPE:  72.94668906622289
 # MedAE:  0.9886263896496363
+
+# I constructed a 11-dimention feature matrix from the original data, which are the long term(50 days) simple
+# moving average, long term(50 days) exponent moving avearge, short term simple moving average(5 days), short term
+# exponent moving average(5 days), highlow_percentage, percentage_change over a day, the total trade quantity
+# (volume * close_price) of a day. Some of these features are what I found useful in stock price prediction from
+# the internet reference.
+# For the predicting labels, I used the residual, which is the difference between today and yesterday.
+# The final evaluation metrics result is satisfying after I introduced the long term and short term moving average
+# (At first I just used a 20 days moving average). I guessed that it might because that a long term(50 days) moving
+# average combined with a short term(5 days) moving average will give more information from different time intervals
+# aspect. Besides, the highlow_percentage and percentage_change seems also good features in price predicting, which
+# indicates that the price is related to these features.
 ############################################ Problem 2 ###################################################
