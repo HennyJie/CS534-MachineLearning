@@ -2,7 +2,7 @@
 @Description: In User Settings Edit
 @Author: your name
 @Date: 2019-10-08 15:46:41
-@LastEditTime: 2019-10-18 23:10:51
+@LastEditTime: 2019-10-19 00:09:26
 @LastEditors: Please set LastEditors
 '''
 import numpy as np
@@ -23,19 +23,22 @@ class QuarternaryDecisionTree:
         self.tree = None
 
     def get_entropy(self, target):
-        label = np.unique(target)
-        n = label.size
-        count = np.zeros(n)
-        p_i = np.zeros(n)
+        if target.size != 0:
+            label = np.unique(target)
+            n = label.size
+            count = np.zeros(n)
+            p_i = np.zeros(n)
 
-        for i in range(n):
-            count[i] = target[target == label[i]].size
+            for i in range(n):
+                count[i] = target[target == label[i]].size
 
-        p_i = np.divide(count, target.size)
-        entropy = 0
+            p_i = np.divide(count, target.size)
 
-        for i in range(n):
-            entropy = entropy - p_i[i] * np.log2(p_i[i])
+            entropy = 0
+            for i in range(n):
+                entropy = entropy - p_i[i] * np.log2(p_i[i])
+        else:
+            entropy = 0
 
         return entropy
 
@@ -49,11 +52,6 @@ class QuarternaryDecisionTree:
         target_N2 = target[N2_index]
         target_N3 = target[N3_index]
         target_N4 = target[N4_index]
-
-        # p_N1 = target_N1.size / target.size
-        # p_N2 = target_N2.size / target.size
-        # p_N3 = target_N3.size / target.size
-        # p_N4 = target_N4.size / target.size
 
         entropy = target_N1.size * self.get_entropy(target_N1) + \
             target_N2.size * self.get_entropy(target_N2) + \
@@ -92,12 +90,12 @@ class QuarternaryDecisionTree:
         return min_S1, min_S2, min_entropy
 
     def select_split_pairs(self, X, y):
-        min_entropy = float('inf')
+        max_info_gain = -float('inf')
         features_num = X.shape[1]
-        min_X1 = None
-        min_X2 = None
-        min_S1 = 0
-        min_S2 = 0
+        selected_X1 = None
+        selected_X2 = None
+        selected_S1 = 0
+        selected_S2 = 0
 
         for i in range(features_num):
             for j in range(features_num):
@@ -106,15 +104,15 @@ class QuarternaryDecisionTree:
                 else:
                     S1, S2, entropy = self.get_features_pair_min_entropy(
                         X[:, i], X[:, j], y)
+                    info_gain = -entropy
+                    if info_gain > max_info_gain:
+                        max_info_gain = info_gain
+                        selected_X1 = i
+                        selected_S1 = S1
+                        selected_X2 = j
+                        selected_S2 = S2
 
-                    if entropy < min_entropy:
-                        min_entropy = entropy
-                        min_X1 = i
-                        min_S1 = S1
-                        min_X2 = j
-                        min_S2 = S2
-
-        return min_X1, min_S1, min_X2, min_S2
+        return selected_X1, selected_S1, selected_X2, selected_S2
 
     def fit(self, X, y):
         self.tree = self.decision_tree(X, y, self.max_depth)
@@ -125,7 +123,6 @@ class QuarternaryDecisionTree:
             return round(np.mean(y))
 
         X1, S1, X2, S2 = self.select_split_pairs(X, y)
-        # print("Decision Tree: X1:{}, S1:{}, X2:{}, S2:{}".format(X1, S1, X2, S2))
 
         N1_index = np.logical_and(X[:, X1] <= S1, X[:, X2] <= S2)
         N2_index = np.logical_and(X[:, X1] <= S1, X[:, X2] > S2)
@@ -167,21 +164,25 @@ class QuarternaryDecisionTree:
             return self.single_sample_predict(x, tree['N4'])
 
 
-# data_breast_cancer = load_breast_cancer()
-# feature_names = data_breast_cancer.feature_names
-# class_names = data_breast_cancer.target_names
+data_breast_cancer = load_breast_cancer()
+feature_names = data_breast_cancer.feature_names
+class_names = data_breast_cancer.target_names
 
-# X = data_breast_cancer.data
-# y = data_breast_cancer.target
-# X_train, X_test, y_train, y_test = train_test_split(
-#     X, y, test_size=0.3, random_state=100)
-# clf = QuarternaryDecisionTree()
-# clf.fit(X_train, y_train)
-# y_pred = clf.predict(X_test)
-# print("==================Problem 1====================")
-# print("Accuracy: ", accuracy_score(y_test, y_pred))
-# print("Cofusion Matrix: ", confusion_matrix(y_test, y_pred))
-# print("clf.tree: ", clf.tree)
+X = data_breast_cancer.data
+y = data_breast_cancer.target
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=100)
+clf = QuarternaryDecisionTree()
+clf.fit(X_train, y_train)
+y_pred = clf.predict(X_test)
+# clf.fit(X, y)
+# y_pred = clf.predict(X)
+print("==================Problem 1====================")
+print("Accuracy: ", accuracy_score(y_test, y_pred))
+# print("Accuracy: ", accuracy_score(y, y_pred))
+print("Cofusion Matrix: ", confusion_matrix(y_test, y_pred))
+# print("Cofusion Matrix: ", confusion_matrix(y, y_pred))
+print("clf.tree: ", clf.tree)
 
 
 class DaRDecisionTree:
