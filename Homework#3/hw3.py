@@ -1,9 +1,8 @@
 '''
-@Description: In User Settings Edit
-@Author: your name
+@Description: Machine Learning Hw3
+@Author: Hejie Cui
 @Date: 2019-10-08 15:46:41
-@LastEditTime: 2019-10-19 00:09:26
-@LastEditors: Please set LastEditors
+@LastEditTime: 2019-10-19 00:11:14
 '''
 import numpy as np
 from sklearn.datasets import load_breast_cancer
