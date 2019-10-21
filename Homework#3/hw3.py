@@ -2,7 +2,7 @@
 @Description: Machine Learning Hw3
 @Author: Hejie Cui
 @Date: 2019-10-08 15:46:41
-@LastEditTime: 2019-10-19 00:11:14
+@LastEditTime: 2019-10-21 19:29:50
 '''
 import numpy as np
 from sklearn.datasets import load_breast_cancer
@@ -21,6 +21,7 @@ class QuarternaryDecisionTree:
         self.max_depth = max_depth
         self.tree = None
 
+    # calculate the entropy for a specific node
     def get_entropy(self, target):
         if target.size != 0:
             label = np.unique(target)
@@ -41,6 +42,7 @@ class QuarternaryDecisionTree:
 
         return entropy
 
+    # calculate the entropy for two given feature and two given values
     def get_condition_entropy(self, feature1, value1, feature2, value2, target):
         N1_index = np.logical_and(feature1 <= value1, feature2 <= value2)
         N2_index = np.logical_and(feature1 <= value1, feature2 > value2)
@@ -59,6 +61,7 @@ class QuarternaryDecisionTree:
 
         return entropy
 
+    # generate all the possible split values for a specifit feature
     def generate_split_values(self, feature, target):
         split_interval = 50
         argsort = feature.argsort()
@@ -70,6 +73,7 @@ class QuarternaryDecisionTree:
 
         return np.array(split_values)
 
+    # calculate the minimal entropy(max info_gain) for two specific features
     def get_features_pair_min_entropy(self, feature1, feature2, target):
         min_entropy = float('inf')
         min_S1 = 0
@@ -88,6 +92,7 @@ class QuarternaryDecisionTree:
 
         return min_S1, min_S2, min_entropy
 
+    # find the best two split pairs with the max info_gain (min entropy)
     def select_split_pairs(self, X, y):
         max_info_gain = -float('inf')
         features_num = X.shape[1]
@@ -119,7 +124,7 @@ class QuarternaryDecisionTree:
     def decision_tree(self, X, y, max_depth):
         n, m = X.shape
         if n < 3 or max_depth == 0:
-            return round(np.mean(y))
+            return np.mean(y)
 
         X1, S1, X2, S2 = self.select_split_pairs(X, y)
 
@@ -149,7 +154,6 @@ class QuarternaryDecisionTree:
         return y_pred
 
     def single_sample_predict(self, x, tree):
-
         if not isinstance(tree, dict):
             return tree
 
@@ -170,17 +174,14 @@ class_names = data_breast_cancer.target_names
 X = data_breast_cancer.data
 y = data_breast_cancer.target
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.3, random_state=100)
+    X, y, test_size=0.25, random_state=100)
 clf = QuarternaryDecisionTree()
-clf.fit(X_train, y_train)
-y_pred = clf.predict(X_test)
-# clf.fit(X, y)
-# y_pred = clf.predict(X)
+# clf.fit(X_train, y_train)
+# y_pred = clf.predict(X_test)
+clf.fit(X, y)
+y_pred = clf.predict(X)
 print("==================Problem 1====================")
-print("Accuracy: ", accuracy_score(y_test, y_pred))
-# print("Accuracy: ", accuracy_score(y, y_pred))
-print("Cofusion Matrix: ", confusion_matrix(y_test, y_pred))
-# print("Cofusion Matrix: ", confusion_matrix(y, y_pred))
+print("AUC: ", metrics.roc_auc_score(y, y_pred))
 print("clf.tree: ", clf.tree)
 
 
@@ -189,6 +190,7 @@ class DaRDecisionTree:
         self.max_depth = max_depth
         self.tree = None
 
+    # calculate the MSE for a specific feature and a specific value
     def get_condition_MSE(self, feature, value, target):
         L_index = feature <= value
         R_index = feature > value
@@ -196,11 +198,19 @@ class DaRDecisionTree:
         target_L = target[L_index]
         target_R = target[R_index]
 
-        MSE = target_L.size * np.var(target_L) + \
-            target_R.size * np.var(target_R)
+        if target_L.size == 0:
+            L_MSE = 0
+        else:
+            L_MSE = target_L.size * np.var(target_L)
+        if target_R.size == 0:
+            R_MSE = 0
+        else:
+            R_MSE = target_R.size * np.var(target_R)
+        MSE = L_MSE + R_MSE
 
         return MSE
 
+    # get the minimal MSE for a specific feature
     def get_feature_min_MSE(self, feature, target):
         min_MSE = float('inf')
         min_S = 0
@@ -216,6 +226,7 @@ class DaRDecisionTree:
 
         return min_S, min_MSE
 
+    # select the best split pairs with minimal MSE
     def select_split_pairs(self, X, y):
         min_MSE = float('inf')
         features_num = X.shape[1]
@@ -264,7 +275,6 @@ class DaRDecisionTree:
         return y_pred
 
     def single_sample_predict(self, x, tree):
-
         if not isinstance(tree, dict):
             return tree.predict(x.reshape(1, -1))[0]
 
@@ -284,17 +294,16 @@ clf = DaRDecisionTree()
 # clf.fit(X_train, y_train)
 # y_pred = clf.predict(X_test)
 
-# MSE = metrics.mean_squared_error(y_test, y_pred)
-# RMSE = np.sqrt(MSE)
-# RSQ = metrics.r2_score(y_test, y_pred)
-# MAE = metrics.mean_absolute_error(y_test, y_pred)
-# MAPE = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
-# MedAE = metrics.median_absolute_error(y_test, y_pred)
-print("==================Problem 2====================")
-# print("MSE: {}, RMSE: {}, RSQ: {}, MAE: {}, MAPE: {}, MedAE: {}".format(
-#     MSE, RMSE, RSQ, MAE, MAPE, MedAE))
-
 clf.fit(X, y)
 y_pred = clf.predict(X)
 mse = metrics.mean_squared_error(y, y_pred)
-print("mse: ", mse)
+MSE = metrics.mean_squared_error(y, y_pred)
+RMSE = np.sqrt(MSE)
+RSQ = metrics.r2_score(y, y_pred)
+MAE = metrics.mean_absolute_error(y, y_pred)
+MAPE = np.mean(np.abs((y - y_pred) / y)) * 100
+MedAE = metrics.median_absolute_error(y, y_pred)
+print("==================Problem 2====================")
+print("MSE: {}, RMSE: {}, RSQ: {}, MAE: {}, MAPE: {}, MedAE: {}".format(
+    MSE, RMSE, RSQ, MAE, MAPE, MedAE))
+print("clf.tree: ", clf.tree)
