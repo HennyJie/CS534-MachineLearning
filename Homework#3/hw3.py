@@ -2,7 +2,7 @@
 @Description: Machine Learning Hw3
 @Author: Hejie Cui
 @Date: 2019-10-08 15:46:41
-@LastEditTime: 2019-10-21 22:00:43
+@LastEditTime: 2019-10-21 22:02:07
 '''
 import numpy as np
 from sklearn.datasets import load_breast_cancer
@@ -297,11 +297,11 @@ X_train, X_test, y_train, y_test = train_test_split(
 clf = QuarternaryDecisionTree()
 
 # - Not split the train and test set
-# clf.fit(X, y)
-# y_pred = clf.predict(X)
-# print("==================Problem 1====================")
-# print("AUC: ", metrics.roc_auc_score(y, y_pred))
-# print("clf.tree: ", clf.tree)
+clf.fit(X, y)
+y_pred = clf.predict(X)
+print("==================Problem 1====================")
+print("AUC: ", metrics.roc_auc_score(y, y_pred))
+print("Quarternary Decision Tree Structure: ", clf.tree)
 
 # - Split the train and test set
 # clf.fit(X_train, y_train)
@@ -374,7 +374,7 @@ MedAE = metrics.median_absolute_error(y, y_pred)
 print("==================Problem 2====================")
 print("MSE: {}, RMSE: {}, RSQ: {}, MAE: {}, MAPE: {}, MedAE: {}".format(
     MSE, RMSE, RSQ, MAE, MAPE, MedAE))
-print("clf.tree: ", clf.tree)
+print("The Divide-and-Regress Tree Structure: ", clf.tree)
 
 # - Split the train and test set
 # clf.fit(X_train, y_train)
