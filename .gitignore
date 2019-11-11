@@ -12,3 +12,7 @@ pandas-profiling-master/
 *.pdf
 cs534/
 HomeworkSolution/
+*.jpeg
+*.png
+*.jpg
+*.pptx
