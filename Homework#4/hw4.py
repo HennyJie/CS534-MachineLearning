@@ -1,7 +1,7 @@
 '''
 @Author: your name
 @Date: 2019-11-09 19:31:31
-@LastEditTime: 2019-11-11 23:29:00
+@LastEditTime: 2019-11-12 09:18:50
 @LastEditors: Please set LastEditors
 @Description: In User Settings Edit
 @FilePath: /Machine Learning/Homework#4/hw4.py
@@ -22,22 +22,25 @@ class GreedyKNN:
 
     def kNNpredict(self, X, y, k=5):
         distances = np.zeros([X.shape[0], X.shape[0]])
-        y_hat = 0
+        y_hat = np.zeros(X.shape[0])
+
         for i in range(X.shape[0]):
             for j in range(X.shape[0]):
                 if i == j:
                     distances[i][j] = float('inf')
                 else:
                     distances[i][j] = self.euclidean_distance(X[i, :], X[j, :])
-        print("distances shape: ", distances.shape)
 
-        sorted_index = np.argsort(distances)
-        print("sorted_index: ", sorted_index)
+        # sort in each column
+        sorted_index = np.argsort(distances, axis=0)
 
-        neighbors = []
+        neighbors = np.zeros([k, X.shape[0]])
         for i in range(k):
-            neighbors.append(y[sorted_index])
-        y_hat = np.average(neighbors)
+            for j in range(X.shape[0]):
+                neighbors[i][j] = y[sorted_index[i][j]]
+
+        for i in range(X.shape[0]):
+            y_hat[i] = np.sum(neighbors[:, i]) / len(neighbors[:, i])
 
         return y_hat
 
@@ -55,12 +58,17 @@ class GreedyKNN:
                 # Implement your own kNNpredict function
                 # The function should return kNN prediction for the given X, y, and k
                 y_hat = self.kNNpredict(X[:, feature_lst + [j]], y, k)  # TODO
-                # auroc =  # TODO: measure AUROC with y_hat and y
+
+                # Measure AUROC with y_hat and y
                 auroc = metrics.roc_auc_score(y, y_hat)
                 if auroc > max_auroc:
                     max_auroc = auroc
                     max_var = j
+            print("max_var: ", max_var)
+
             feature_lst.append(max_var)
+
+        print("feature list: ", feature_lst)
 
         return feature_lst
 
